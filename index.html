@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LectureNote AI | 講義音声ノート作成</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Fira+Code&display=swap" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container py-4 pc-max-width">
+    <header class="text-center mb-5 fade-in">
+      <h1 class="display-4"><i class="bi bi-mic-fill me-2"></i>LectureNote AI</h1>
+      <p class="text-muted">講義音声を解析して、文字起こし、要約、要点を自動生成します</p>
+    </header>
+
+    <main>
+      <!-- API Key Area -->
+      <section id="api-key-section" class="glass-card p-4 fade-in">
+        <h2 class="h5 mb-3"><i class="bi bi-key-fill me-2"></i>APIキー設定</h2>
+        <div id="api-key-form">
+          <div class="input-group">
+            <input id="apiKeyInput" type="password" class="form-control form-control-premium" placeholder="Gemini API Key を入力">
+            <button id="saveApiKeyBtn" class="btn btn-premium px-4">保存</button>
+          </div>
+          <small class="text-muted mt-2 d-block">APIキーはブラウザのlocalStorageにのみ保存されます</small>
+        </div>
+        <div id="api-key-actions" class="hidden text-center">
+          <span class="badge bg-success mb-2 p-2"><i class="bi bi-check-circle-fill me-1"></i>APIキー設定済み</span><br>
+          <button id="changeApiKeyBtn" class="btn btn-outline-light btn-sm mt-1">APIキーを変更</button>
+        </div>
+      </section>
+
+      <!-- Error Message -->
+      <section id="apiError" class="glass-card p-4 hidden fade-in border-danger" aria-live="polite">
+        <h2 class="h5 text-danger mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i>API エラー</h2>
+        <pre id="apiErrorText" class="result-area mb-0"></pre>
+      </section>
+
+      <!-- Input Area -->
+      <section class="glass-card p-4 fade-in">
+        <div class="mb-4">
+          <label for="lectureName" class="form-label fw-bold">講義名（任意）</label>
+          <input id="lectureName" type="text" class="form-control form-control-premium" placeholder="例：2026年度 経済学特論">
+        </div>
+
+        <div class="mb-4">
+          <label for="fileInput" class="form-label fw-bold">音声ファイルを選択</label>
+          <input id="fileInput" type="file" class="form-control form-control-premium" accept="audio/*">
+          <div class="form-text text-muted">対応形式: mp3, wav, m4a, webm など</div>
+        </div>
+
+        <div class="text-center mt-5">
+          <button id="analyzeBtn" class="btn btn-premium btn-lg px-5 w-100 py-3">
+            <i class="bi bi-magic me-2"></i>解析を開始する
+          </button>
+          
+          <div id="loading" class="hidden mt-4">
+            <div class="d-flex flex-column align-items-center">
+              <div class="spinner-premium mb-3"></div>
+              <span id="statusText" class="fw-bold">解析中です。しばらくお待ちください...</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Area -->
+      <section id="results" class="hidden">
+        <div class="glass-card p-4 fade-in">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="h5 mb-0"><i class="bi bi-justify-left me-2"></i>文字起こし</h3>
+            <button class="btn btn-sm btn-outline-info copy-btn" data-target="transcript">
+              <i class="bi bi-clipboard me-1"></i>コピー
+            </button>
+          </div>
+          <div class="result-area">
+            <pre id="transcript" class="mb-0"></pre>
+          </div>
+        </div>
+
+        <div class="glass-card p-4 fade-in">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="h5 mb-0"><i class="bi bi-stars me-2"></i>要約</h3>
+            <button class="btn btn-sm btn-outline-info copy-btn" data-target="summary">
+              <i class="bi bi-clipboard me-1"></i>コピー
+            </button>
+          </div>
+          <div class="result-area">
+            <div id="summary" class="lh-base"></div>
+          </div>
+        </div>
+
+        <div class="glass-card p-4 fade-in">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="h5 mb-0"><i class="bi bi-list-check me-2"></i>要点</h3>
+            <button class="btn btn-sm btn-outline-info copy-btn" data-target="points">
+              <i class="bi bi-clipboard me-1"></i>コピー
+            </button>
+          </div>
+          <div class="result-area">
+            <ul id="points" class="mb-0"></ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="text-center mt-5 text-muted small">
+      <p>© 2026 LectureNote AI | Powered by Gemini</p>
+    </footer>
+
+    <!-- Toast Component -->
+    <div id="toast" class="toast-custom">コピーしました</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
