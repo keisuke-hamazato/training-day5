@@ -2,7 +2,7 @@
 (function(){
   const KEY_NAME = 'gemini_api_key';
   // Vertex AI model (Tokyo region stable naming)
-  const MODEL = 'gemini-3.5-flash';
+  const MODEL = 'gemini-1.5-flash';
   // Use v1 for stability with the new AQ key
   const ENDPOINT = (apiKey) => `https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${apiKey}`;
 
@@ -142,44 +142,13 @@
     }finally{ setLoading(false); }
   }
 
-  function saveApiKey(){ const v = ($('apiKeyInput') && $('apiKeyInput').value || '').trim(); if(!v){ alert('APIキーを入力してください'); return; } localStorage.setItem(KEY_NAME, v); hide($('api-key-form')); show($('api-key-actions')); runDiagnostics(); }
+  function saveApiKey(){ const v = ($('apiKeyInput') && $('apiKeyInput').value || '').trim(); if(!v){ alert('APIキーを入力してください'); return; } localStorage.setItem(KEY_NAME, v); hide($('api-key-form')); show($('api-key-actions')); }
 
   function changeApiKey(){ show($('api-key-form')); hide($('api-key-actions')); }
 
-  async function runDiagnostics(){
-    const apiKey = localStorage.getItem(KEY_NAME);
-    if(!apiKey) return;
-    const modelSelect = $('modelSelect');
-    if(modelSelect) modelSelect.innerHTML = '<option value="">モデルを取得中...</option>';
-
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`;
-      const resp = await fetch(url);
-      const json = await resp.json();
-      
-      if(json.models && modelSelect) {
-        // Filter generateContent models
-        const filtered = json.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'));
-        modelSelect.innerHTML = '';
-        filtered.forEach(m => {
-          const name = m.name.replace('models/', '');
-          const opt = document.createElement('option');
-          opt.value = name;
-          opt.textContent = name;
-          // Prefer flash as default
-          if(name.includes('flash') && !modelSelect.value.includes('flash')) opt.selected = true;
-          modelSelect.appendChild(opt);
-        });
-      }
-    } catch(e) {
-      console.error('Diagnostics Error:', e);
-      if(modelSelect) modelSelect.innerHTML = '<option value="gemini-3.5-flash">gemini-3.5-flash (取得失敗)</option>';
-    }
-  }
-
   function init(){
     const saved = localStorage.getItem(KEY_NAME);
-    if(saved){ hide($('api-key-form')); show($('api-key-actions')); runDiagnostics(); } else { show($('api-key-form')); hide($('api-key-actions')); }
+    if(saved){ hide($('api-key-form')); show($('api-key-actions')); } else { show($('api-key-form')); hide($('api-key-actions')); }
     if($('saveApiKeyBtn')) $('saveApiKeyBtn').addEventListener('click', saveApiKey);
     if($('changeApiKeyBtn')) $('changeApiKeyBtn').addEventListener('click', changeApiKey);
     if($('analyzeBtn')) $('analyzeBtn').addEventListener('click', handleAnalyze);

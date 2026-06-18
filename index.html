@@ -44,21 +44,12 @@
 
       <!-- Input Area -->
       <section class="glass-card p-4 fade-in">
-        <div class="row g-4">
-          <div class="col-md-6">
-            <label for="lectureName" class="form-label fw-bold">講義名（任意）</label>
-            <input id="lectureName" type="text" class="form-control form-control-premium" placeholder="例：2026年度 経済学特論">
-          </div>
-          <div class="col-md-6">
-            <label for="modelSelect" class="form-label fw-bold">使用モデル</label>
-            <select id="modelSelect" class="form-select form-control-premium">
-              <option value="gemini-3.5-flash">読み込み中...</option>
-            </select>
-            <div class="form-text text-muted">APIキーから利用可能なモデルを自動取得します</div>
-          </div>
+        <div class="mb-4">
+          <label for="lectureName" class="form-label fw-bold">講義名（任意）</label>
+          <input id="lectureName" type="text" class="form-control form-control-premium" placeholder="例：2026年度 経済学特論">
         </div>
 
-        <div class="mb-4 mt-4">
+        <div class="mb-4">
           <label for="fileInput" class="form-label fw-bold">音声ファイルを選択</label>
           <input id="fileInput" type="file" class="form-control form-control-premium" accept="audio/*">
           <div class="form-text text-muted">対応形式: mp3, wav, m4a, webm など</div>
