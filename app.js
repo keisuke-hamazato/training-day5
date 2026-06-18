@@ -2,9 +2,9 @@
 (function(){
   const KEY_NAME = 'gemini_api_key';
   // Vertex AI model (Tokyo region stable naming)
-  const MODEL = 'gemini-flash-latest';
-  // Use v1beta and the confirmed available alias gemini-flash-latest
-  const ENDPOINT = (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
+  const MODEL = 'gemini-3.5-flash';
+  // Use v1 for stability with the new AQ key
+  const ENDPOINT = (apiKey) => `https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${apiKey}`;
 
   const ALLOWED_TYPES = ['audio/mpeg','audio/wav','audio/mp4','audio/x-m4a','audio/webm','audio/ogg','audio/aac','audio/flac','audio/aiff'];
 
@@ -127,19 +127,59 @@
       hide($('loading'));
       show($('results'));
     }catch(err){
-      console.error(err);
-      if(err && err.status === 429) showApiError('利用回数上限に達しました。しばらく経ってから再試行してください。');
-      else showApiError('解析に失敗しました。APIキーまたは通信状況を確認してください');
+      console.error('Detailed Error Object:', err);
+      let errorMsg = `解析に失敗しました (Status: ${err.status || 'unknown'})`;
+      
+      if (err.json && err.json.error) {
+        errorMsg += `\nMessage: ${err.json.error.message || JSON.stringify(err.json.error)}`;
+      } else if (err.body) {
+        errorMsg += `\nResponse Body: ${err.body.substring(0, 200)}...`;
+      }
+
+      if(err && err.status === 429) showApiError('利用回数上限に達しました。しばらく経ってから再試行してください。\n' + errorMsg);
+      else if(err && err.status === 503) showApiError('サービスが一時的に混み合っています。少し時間をおいてから再度お試しください。\n' + errorMsg);
+      else showApiError(errorMsg + '\nAPIキーまたは通信状況を確認してください');
     }finally{ setLoading(false); }
   }
 
-  function saveApiKey(){ const v = ($('apiKeyInput') && $('apiKeyInput').value || '').trim(); if(!v){ alert('APIキーを入力してください'); return; } localStorage.setItem(KEY_NAME, v); hide($('api-key-form')); show($('api-key-actions')); }
+  function saveApiKey(){ const v = ($('apiKeyInput') && $('apiKeyInput').value || '').trim(); if(!v){ alert('APIキーを入力してください'); return; } localStorage.setItem(KEY_NAME, v); hide($('api-key-form')); show($('api-key-actions')); runDiagnostics(); }
 
   function changeApiKey(){ show($('api-key-form')); hide($('api-key-actions')); }
 
+  async function runDiagnostics(){
+    const apiKey = localStorage.getItem(KEY_NAME);
+    if(!apiKey) return;
+    const modelSelect = $('modelSelect');
+    if(modelSelect) modelSelect.innerHTML = '<option value="">モデルを取得中...</option>';
+
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`;
+      const resp = await fetch(url);
+      const json = await resp.json();
+      
+      if(json.models && modelSelect) {
+        // Filter generateContent models
+        const filtered = json.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'));
+        modelSelect.innerHTML = '';
+        filtered.forEach(m => {
+          const name = m.name.replace('models/', '');
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          // Prefer flash as default
+          if(name.includes('flash') && !modelSelect.value.includes('flash')) opt.selected = true;
+          modelSelect.appendChild(opt);
+        });
+      }
+    } catch(e) {
+      console.error('Diagnostics Error:', e);
+      if(modelSelect) modelSelect.innerHTML = '<option value="gemini-3.5-flash">gemini-3.5-flash (取得失敗)</option>';
+    }
+  }
+
   function init(){
     const saved = localStorage.getItem(KEY_NAME);
-    if(saved){ hide($('api-key-form')); show($('api-key-actions')); } else { show($('api-key-form')); hide($('api-key-actions')); }
+    if(saved){ hide($('api-key-form')); show($('api-key-actions')); runDiagnostics(); } else { show($('api-key-form')); hide($('api-key-actions')); }
     if($('saveApiKeyBtn')) $('saveApiKeyBtn').addEventListener('click', saveApiKey);
     if($('changeApiKeyBtn')) $('changeApiKeyBtn').addEventListener('click', changeApiKey);
     if($('analyzeBtn')) $('analyzeBtn').addEventListener('click', handleAnalyze);
