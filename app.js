@@ -2,7 +2,7 @@
 (function(){
   const KEY_NAME = 'gemini_api_key';
   // Vertex AI model (Tokyo region stable naming)
-  const MODEL = 'gemini-1.5-flash';
+  const MODEL = 'gemini-3.5-flash';
   // Use v1 for stability with the new AQ key
   const ENDPOINT = (apiKey) => `https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${apiKey}`;
 
